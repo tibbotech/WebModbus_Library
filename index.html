@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <script type="text/javascript" src="TibboWebSerial.min.js"></script>
+    <script type="text/javascript" src="TibboWebModbus.min.js"></script>
+    <title>Tibbo Serial Library</title>
+</head>
+
+
+
+<body>
+    <h1>Tibbo Modbus Library</h1>
+
+    <button onclick="connectToDevice()">Connect to Device</button><br /><br />
+
+    <input id="Byte1" type="text" name="tb1" value="05"/>
+    <input id="Byte2" type="text" name="tb1" value="03"/>
+    <input id="Byte3" type="text" name="tb1" value="00"/>
+    <input id="Byte4" type="text" name="tb1" value="C8"/>
+    <input id="Byte5" type="text" name="tb1" value="00"/>
+    <input id="Byte6" type="text" name="tb1" value="04"/>
+    <button onclick="sendCommand()">Send Data</button><br /><br />
+
+    Received Text: <b><span id="ReceivedText"></span></b><br /><br />
+
+</body>
+
+<script>
+    
+    var serial
+    var modbus
+
+    function connectToDevice() {
+        const filters = [];
+        navigator.usb.requestDevice({ filters: filters })
+            .then(device => {
+                serial = new TibboWebSerial.Serial(device, { encoding: "HEX" });
+                modbus = new TibboWebModbus.Modbus(device);
+                //Callbacks
+                serial.serDataArrival = this.onSerDataArrival;
+                serial.connect()
+            })
+            .catch(e => {
+                console.log("There is no device. " + e);
+            });
+    }
+
+    function sendCommand() {
+        var byte1=document.getElementById('Byte1').value;
+        var byte2=document.getElementById('Byte2').value;
+        var byte3=document.getElementById('Byte3').value;
+        var byte4=document.getElementById('Byte4').value;
+        var byte5=document.getElementById('Byte5').value;
+        var byte6=document.getElementById('Byte6').value;
+        var command = byte1 + byte2 + byte3 + byte4 + byte5 + byte6
+        modbus.modbusSendCommand(command)
+
+    }
+
+    function onSerDataArrival(data) {
+        console.log('onSerDataArrival: ' + data);
+        var element = document.getElementById("ReceivedText");
+        element.innerHTML = data;
+    }
+
+</script>
+</html>
